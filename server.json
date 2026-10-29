@@ -1,0 +1,14 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "app.bannerproof/bannerproof",
+  "title": "Bannerproof",
+  "description": "Free EU cookie-consent audit: trackers before consent, Reject path, Consent Mode v2, evidence + fix",
+  "version": "1.0.1",
+  "websiteUrl": "https://bannerproof.app/mcp",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.bannerproof.app/mcp"
+    }
+  ]
+}

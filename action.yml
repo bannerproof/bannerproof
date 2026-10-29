@@ -1,0 +1,69 @@
+name: Bannerproof cookie-consent check
+description: Fail the pipeline when a deploy adds cookie-consent issues (trackers before consent, after Reject, Consent Mode, TCF).
+author: Bannerproof
+branding:
+  icon: shield
+  color: green
+
+inputs:
+  domain:
+    description: Domain monitored in your Bannerproof account, e.g. example.com
+    required: true
+  api-token:
+    description: Bannerproof API token (Settings → API token). Store it as a secret.
+    required: true
+  fail-on:
+    description: '"new" fails only on issues the previous scan did not have (default); "any" fails on any issue'
+    required: false
+    default: new
+  api-url:
+    description: API base URL
+    required: false
+    default: https://api.bannerproof.app
+
+outputs:
+  status:
+    description: pass, fail or error
+    value: ${{ steps.check.outputs.status }}
+  score:
+    description: Compliance score 0–100
+    value: ${{ steps.check.outputs.score }}
+
+runs:
+  using: composite
+  steps:
+    - id: check
+      shell: bash
+      env:
+        BP_DOMAIN: ${{ inputs.domain }}
+        BP_TOKEN: ${{ inputs.api-token }}
+        BP_FAIL_ON: ${{ inputs.fail-on }}
+        BP_API: ${{ inputs.api-url }}
+      run: |
+        set -uo pipefail
+        body=$(jq -n --arg d "$BP_DOMAIN" --arg f "$BP_FAIL_ON" '{domain:$d, failOn:$f}')
+        out=$(mktemp)
+        code=$(curl -sS -o "$out" -w '%{http_code}' -X POST "$BP_API/api/ci/check" \
+          -H "X-Api-Token: $BP_TOKEN" -H "Content-Type: application/json" -d "$body")
+        # Still scanning: poll for up to 5 more minutes.
+        for _ in $(seq 1 30); do
+          [ "$code" = "202" ] || break
+          sleep 10
+          poll=$(jq -r '.poll' "$out")
+          code=$(curl -sS -o "$out" -w '%{http_code}' "$BP_API$poll" -H "X-Api-Token: $BP_TOKEN")
+        done
+        cat "$out"; echo
+        status=$(jq -r '.status // "error"' "$out")
+        echo "status=$status" >> "$GITHUB_OUTPUT"
+        echo "score=$(jq -r '.score // ""' "$out")" >> "$GITHUB_OUTPUT"
+        if [ "$code" = "200" ]; then
+          echo "::notice::Bannerproof: consent check passed for $BP_DOMAIN (score $(jq -r '.score' "$out"))"
+          exit 0
+        elif [ "$code" = "422" ]; then
+          jq -r '.new_issues[]? | "::error::Bannerproof: \(.tracker) (\(.category))\(if .still_active_after_reject then " still active after Reject" else " fires before consent" end)"' "$out"
+          echo "::error::Bannerproof: consent check failed for $BP_DOMAIN"
+          exit 1
+        else
+          echo "::error::Bannerproof: check could not run (HTTP $code): $(jq -r '.message // ""' "$out")"
+          exit 1
+        fi
