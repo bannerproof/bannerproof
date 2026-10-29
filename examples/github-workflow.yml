@@ -1,0 +1,19 @@
+# .github/workflows/consent-check.yml — run after your site is deployed.
+name: Cookie-consent check
+
+on:
+  workflow_run:
+    workflows: ["Deploy"]   # the name of your deploy workflow
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  consent:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: bannerproof/bannerproof@v1
+        with:
+          domain: example.com
+          api-token: ${{ secrets.BANNERPROOF_TOKEN }}
+          fail-on: new
