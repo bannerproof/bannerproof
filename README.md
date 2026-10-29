@@ -31,6 +31,7 @@ A free quick check works without an account (`https://api.bannerproof.app/mcp/fr
 | Claude (claude.ai / Desktop) | Settings → Connectors → find **Bannerproof** in the directory, or add a custom connector with the URL above |
 | Claude Code | `claude mcp add --transport http bannerproof https://api.bannerproof.app/mcp` |
 | Cursor | see [`examples/cursor-mcp.json`](examples/cursor-mcp.json) |
+| Cline | see [`llms-install.md`](llms-install.md) |
 | Other clients | add an MCP server with the URL above (OAuth), or send `Authorization: Bearer <API token>` |
 
 Step-by-step guide: [bannerproof.app/help/connect-claude-chatgpt](https://bannerproof.app/help/connect-claude-chatgpt)
