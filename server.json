@@ -3,16 +3,36 @@
   "name": "app.bannerproof/bannerproof",
   "title": "Bannerproof",
   "description": "EU cookie-consent audit: trackers before consent, Reject all, Consent Mode v2, TCF; evidence + fixes",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "websiteUrl": "https://bannerproof.app/mcp",
   "repository": {
     "url": "https://github.com/bannerproof/bannerproof",
     "source": "github"
   },
+  "icons": [
+    {
+      "src": "https://bannerproof.app/icon-512.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "512x512"
+      ]
+    },
+    {
+      "src": "https://bannerproof.app/icon-192.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "192x192"
+      ]
+    }
+  ],
   "remotes": [
     {
       "type": "streamable-http",
       "url": "https://api.bannerproof.app/mcp"
+    },
+    {
+      "type": "streamable-http",
+      "url": "https://api.bannerproof.app/mcp/free"
     }
   ]
 }
